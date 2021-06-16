@@ -20,24 +20,23 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="该文着手解决的任务是基于自监督的视频表征学习，核心思想还是通过加Memory Bank的方式记忆视频特征，跟17年Anomaly detection领域提出的MemAE很像，都是用prototypical vectors组合的方式生成新的特征。 Motivation  尽管已经有不少在多模态任务上的视频表示学习的work，但在视频这单一模态上的自监督表示学习鲜有人问津。 视频由于其包含时序">
+  <meta name="description" content="本文主要对CML-BGNN这篇文章中最终的Loss function提出相关质疑与证明过程。主要的Claim是最终的loss \(\mathcal{L}\) 中，所谓的Bayesian loss\(\mathcal{L}_B\)是不必要显式写出的，因为它已经蕴含在交叉熵损失中。或者说如下Claim是成立的（证明过程开始是用英文写的，后面有时间转回中文）： Claim: \(\underset{\">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MemDPC-用MemoryBank记忆视频特征">
-<meta property="og:url" content="http://example.com/2021/06/16/MemDPC/index.html">
+<meta property="og:title" content="对CML-BGNN中损失函数的纠正与证明">
+<meta property="og:url" content="http://example.com/2021/06/16/CML-BGNN-loss-proof/index.html">
 <meta property="og:site_name" content="Fafa&#39;s Blog">
-<meta property="og:description" content="该文着手解决的任务是基于自监督的视频表征学习，核心思想还是通过加Memory Bank的方式记忆视频特征，跟17年Anomaly detection领域提出的MemAE很像，都是用prototypical vectors组合的方式生成新的特征。 Motivation  尽管已经有不少在多模态任务上的视频表示学习的work，但在视频这单一模态上的自监督表示学习鲜有人问津。 视频由于其包含时序">
+<meta property="og:description" content="本文主要对CML-BGNN这篇文章中最终的Loss function提出相关质疑与证明过程。主要的Claim是最终的loss \(\mathcal{L}\) 中，所谓的Bayesian loss\(\mathcal{L}_B\)是不必要显式写出的，因为它已经蕴含在交叉熵损失中。或者说如下Claim是成立的（证明过程开始是用英文写的，后面有时间转回中文）： Claim: \(\underset{\">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://z3.ax1x.com/2021/06/16/2XaY9S.png">
-<meta property="article:published_time" content="2021-06-16T08:46:08.000Z">
-<meta property="article:modified_time" content="2021-06-16T13:24:45.428Z">
+<meta property="article:published_time" content="2021-06-16T13:05:00.000Z">
+<meta property="article:modified_time" content="2021-06-16T13:24:23.485Z">
 <meta property="article:author" content="Fafa">
-<meta property="article:tag" content="Video Representation">
-<meta property="article:tag" content="Memory Bank">
-<meta property="article:tag" content="Self-supervised">
+<meta property="article:tag" content="Meta-learning">
+<meta property="article:tag" content="Continual-learning">
+<meta property="article:tag" content="GNN">
+<meta property="article:tag" content="Variational inference">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://z3.ax1x.com/2021/06/16/2XaY9S.png">
 
-<link rel="canonical" href="http://example.com/2021/06/16/MemDPC/">
+<link rel="canonical" href="http://example.com/2021/06/16/CML-BGNN-loss-proof/">
 
 
 <script id="page-configurations">
@@ -50,7 +49,7 @@
   };
 </script>
 
-  <title>MemDPC-用MemoryBank记忆视频特征 | Fafa's Blog</title>
+  <title>对CML-BGNN中损失函数的纠正与证明 | Fafa's Blog</title>
   
 
 
@@ -170,7 +169,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/06/16/MemDPC/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/06/16/CML-BGNN-loss-proof/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -183,7 +182,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          MemDPC-用MemoryBank记忆视频特征
+          对CML-BGNN中损失函数的纠正与证明
         </h1>
 
         <div class="post-meta">
@@ -194,7 +193,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-06-16 16:46:08 / Modified: 21:24:45" itemprop="dateCreated datePublished" datetime="2021-06-16T16:46:08+08:00">2021-06-16</time>
+              <time title="Created: 2021-06-16 21:05:00 / Modified: 21:24:23" itemprop="dateCreated datePublished" datetime="2021-06-16T21:05:00+08:00">2021-06-16</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -202,7 +201,7 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%96%87%E7%8C%AE%E9%A6%86/" itemprop="url" rel="index"><span itemprop="name">文献馆</span></a>
+                  <a href="/categories/%E6%80%9D%E6%B5%B7/" itemprop="url" rel="index"><span itemprop="name">思海</span></a>
                 </span>
             </span>
 
@@ -224,32 +223,53 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>该文着手解决的任务是基于自监督的视频表征学习，核心思想还是通过加Memory Bank的方式记忆视频特征，跟17年Anomaly detection领域提出的MemAE很像，都是用prototypical vectors组合的方式生成新的特征。</p>
-<h1 id="motivation">Motivation</h1>
+        <p>本文主要对<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1911.04695">CML-BGNN</a>这篇文章中最终的Loss function提出相关质疑与证明过程。主要的Claim是最终的loss <span class="math inline">\(\mathcal{L}\)</span> 中，所谓的Bayesian loss<span class="math inline">\(\mathcal{L}_B\)</span>是不必要显式写出的，因为它已经蕴含在交叉熵损失中。或者说如下Claim是成立的（证明过程开始是用英文写的，后面有时间转回中文）：</p>
+<h2 id="claim-undersetthetaargmin-mathcall_e-undersetthetaargmin-mathcall_b">Claim: <span class="math inline">\(\underset{\Theta}{\arg\min} \ \mathcal{L}_E = \underset{\Theta}{\arg\min} \ \mathcal{L}_B\)</span></h2>
+<p>Goal: use distribution parameterized by <span class="math inline">\(\Theta\)</span>: <span class="math inline">\(q_{\Theta}(\tilde{y}|\tilde{x},S)\)</span> to approximate true posterior <span class="math inline">\(p(\tilde{y}|\tilde{x},S)\)</span>, this is to minimize the KL divergence between <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> <span class="math display">\[
+\begin{align}
+\mathcal{L}_B&amp;=\underset{\tilde{x},S}{E}[D_{KL}[p(\tilde{y}|\tilde{x}, S)\ || \ q_{\Theta}(\tilde{y}|\tilde{x},S))]] \\
+\end{align}
+\]</span> leave out <span class="math inline">\(E, \tilde{x}, S\)</span> for simplicity: <span class="math display">\[
+\begin{align}
+D_{KL}[p(\tilde{y}|\tilde{x}, S)\ || \ q_{\Theta}(\tilde{y}|\tilde{x},S))] &amp;= \int p(\tilde{y}|\tilde{x}, S)log\frac{p(\tilde{y}|\tilde{x},S)}{q_{\Theta}(\tilde{y}|\tilde{x},S)}d\tilde{y} \\
+\end{align}
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+\underset{\Theta}{\arg \min } \ \mathcal{L}_{B}&amp;=\underset{\Theta}{\arg \min} \ \int p(\tilde{y}|\tilde{x}, S)log\frac{p(\tilde{y}|\tilde{x},S)}{q_{\Theta}(\tilde{y}|\tilde{x},S)}d\tilde{y}  \\
+&amp;= \underset{\Theta}{\arg \max} \ \int p(\tilde{y}|\tilde{x}, S)log[{q_{\Theta}(\tilde{y}|\tilde{x},S)}]d\tilde{y} \\
+&amp;= \underset{\Theta}{\arg \max} \ \underset{\tilde{y}\sim p(\tilde{y}|\tilde{x},S)}{E}[log \ q_{\Theta}(\tilde{y}|\tilde{x},S)]
+\end{align}
+\]</span></p>
+<p>reintroduce <span class="math inline">\(E, \tilde{x}, S\)</span>: <span class="math display">\[
+\underset{\Theta}{\arg \min } \ \mathcal{L}_{B}=\underset{\Theta}{\arg \max} \ \underset{\tilde{y},\tilde{x},S  \sim p(\tilde{y}, \tilde{x},S)}{E}[log \ q_{\Theta}(\tilde{y}|\tilde{x},S)]
+\]</span> Additionally, <span class="math display">\[
+\begin{align}
+p(\tilde{y}|\tilde{x},S) &amp;= \frac{\int p(\tilde{y},\tilde{x}, S, \psi )d\psi}{p(\tilde{x},S)} \\
+&amp;= \frac{\int p(\tilde{y}|\Theta,\tilde{x},\psi)p(\tilde{x})p(S)p(\psi|\Theta,S,\tilde{x})d \psi}{p(\tilde{x},S)} \\
+&amp;= \int p(\tilde{y}|\Theta,\tilde{x},\psi)p(\psi|\Theta,S,\tilde{x})d \psi \\
+\end{align}
+\]</span> use <span class="math inline">\(q_{\phi}(\psi|\Theta, S,\tilde{x})\)</span> to approximate <span class="math inline">\(p(\psi|\Theta,S,\tilde{x})\)</span>, amortizing over <span class="math inline">\(S\)</span>, remember <span class="math inline">\(\Theta=\{\theta, \phi\}\)</span>, thus: <span class="math display">\[
+q_{\Theta}(\tilde{y}|\tilde{x},S)= \int p(\tilde{y}|\Theta,\tilde{x},\psi)q_{\phi}(\psi|\Theta,S,\tilde{x})d \psi
+\]</span></p>
+<p><span class="math display">\[
+\begin{align}
+\underset{\Theta}{\arg \min } \ \mathcal{L}_{B}&amp;=\underset{\Theta}{\arg \max} \ \underset{\tilde{y},\tilde{x},S  \sim p(\tilde{y}, \tilde{x},S)}{E}[log \ q_{\Theta}(\tilde{y}|\tilde{x},S)] \\
+&amp;= \underset{\Theta}{\arg \max} \ \underset{\tilde{y},\tilde{x},S  \sim p(\tilde{y}, \tilde{x},S)}{E}[log \int p(\tilde{y}|\Theta,\tilde{x},\psi)q_{\phi}(\psi|\Theta,S,\tilde{x})d \psi] \\
+&amp;= \underset{\Theta}{\arg \max} \ \underset{\tilde{y},\tilde{x},S  \sim p(\tilde{y}, \tilde{x},S);}{E}[ log \ \underset{\psi \sim q_{\phi}(\psi|\Theta,S,\tilde{x})}{E}[p(\tilde{y}|\Theta,\tilde{x},\psi)]] 
+\end{align}
+\]</span></p>
+<p>the training procedure is entailed in the equation:</p>
 <ol type="1">
-<li>尽管已经有不少在多模态任务上的视频表示学习的work，但在视频这单一模态上的自监督表示学习鲜有人问津。</li>
-<li>视频由于其包含时序信息的数据特性，因此天然便可以做成一个自监督的任务。例如，可以做成future frames prediction的范式——将视频划分成前后两段，通过学习前段、预测后端的方式进行training。而事实上很多video representation learning的模型确实也是这样做的——通过预测的方式引入监督信息进行training.</li>
-<li>future frame prediction涉及到视频行为预测的问题，但视频预测涉及到两个难点：一个是视频画面中很多不规律物体的运动实际上是很难甚至是无法预测的，例如树叶的抖动，但事实上我们也并不关心这部分的运动；另一个是如何从未来的无数种可能中选出最合理的那个，这需要模型具有物体运动规律的先验知识，例如通过学习Golfer的挥击过程，从而通过前一段视频来预测其后续动作。因此，一个好的Video predicting model，既要能够“无视”无关且难以预测的行为（亦或者说focus on我们关心的行为），又要能够学习目标行为的运动规律，从众多可能的future hypothesis中选取出最合理的一个。</li>
+<li><p>first sampling a batch of tasks: <span class="math inline">\(S=\{x,y\}\)</span>, <span class="math inline">\(Q=\{\tilde{x},\tilde{y}\}\)</span></p></li>
+<li><p>extract features for images (node updates and edge updates ) in <span class="math inline">\(S\)</span> and <span class="math inline">\(Q\)</span> based on feature learner <span class="math inline">\(\theta\)</span>.</p></li>
+<li><p>used extracted features of <span class="math inline">\(\tilde{x}\)</span> to generate distributions <span class="math inline">\(q_{\phi}(\psi|\Theta,S,\tilde{x})\)</span>, from which task-specific parameters <span class="math inline">\(\psi\)</span> is sampled for multiple times.</p></li>
+<li><p>classify <span class="math inline">\(\tilde{x}\)</span> based on <span class="math inline">\(\psi\)</span> to get predicted probabilities <span class="math inline">\(p(\tilde{y})\)</span>. Take its average over the sampled <span class="math inline">\(\psi\)</span>.</p></li>
+<li><p>then optimize global parameters <span class="math inline">\(\Theta\)</span> by maximizing expected log-density <span class="math inline">\(log\ p(\tilde{y})\)</span> over sampled data.</p></li>
 </ol>
-<h1 id="related-work">Related work</h1>
-<p>已有的视频表征学习方法有两类：</p>
-<ol type="1">
-<li>一种是预测多个possible future representation 然后选择与ground truth最接近的进行optimization；</li>
-<li>另外一类则是通过contrastive learning进行的——这类模型只预测单个hypothesis，然后找一堆无关视频片段作为negative sample，然后优化model使得prediction相较于这些negatives，能够和ground truth更加相似。</li>
-</ol>
-<h1 id="method">Method</h1>
-<p>主体思想是RNN+Memory Bank。</p>
-<h2 id="computational-flow">Computational flow</h2>
-<p>TIPS：计算流是理解一个算法的有效方式。</p>
-<p>先上架构图：</p>
-<p><img src="https://z3.ax1x.com/2021/06/16/2XaY9S.png"></p>
-<ol type="1">
-<li>视频被切分成了很多个block，每个block大概8帧大小，然后用feature backbone <span class="math inline">\(f\)</span> 对<span class="math inline">\(t\)</span>时刻的block抽取特征，记为<span class="math inline">\(z_i\)</span>，也相应的生成了一个temporal sequence：<span class="math inline">\(\textbf{z}=\{z_i\}_{i=1}^T\)</span>。整个序列被划分成两部分，前<span class="math inline">\(t\)</span>个时刻作为input，为后面的prediction收集信息，后<span class="math inline">\(T-t\)</span>个时刻用于对prediction进行监督。</li>
-<li><span class="math inline">\(\textbf{z}\)</span>被送到RNN中，得到每一步的输出 <span class="math inline">\(c_t\)</span> 。<span class="math inline">\(c_t\)</span> 相当于综合了其前面<span class="math inline">\(t\)</span>个时刻的信息，所以被称为 (temporal) aggregated feature。</li>
-<li>（本文的重点）<span class="math inline">\(c_t\)</span>被送入到一个Memory Module中做 Memory augmented的推理：<span class="math inline">\(M\)</span>是一个记忆单元阵，可以看做是一组Prototypical vectors（原型向量）。<span class="math inline">\(c_t\)</span>通过<span class="math inline">\(\phi\)</span>（可以是任何映射工具，例如一个CNN）生成一个weight vector或probability vector <span class="math inline">\(p_{t+1}\)</span>，接着以<span class="math inline">\(p_{t+1}\)</span>作为权重对<span class="math inline">\(M\)</span>中的向量进行线性组合，得到下一时刻embedding <span class="math inline">\(z_{t+1}\)</span>。NOTE：原文提到这里的组合是Convex Combination（凸组合），也就是说<span class="math inline">\(p_{t+1}\)</span>一定是一个非负元素向量。</li>
-<li>生成的<span class="math inline">\(z_{t+1}\)</span>一方面被送到RNN中进一步的aggregate信息，另一方面与ground truth进行对比，达到supervised learning的效果。因为整个training都是在一个视频中进行的，并且没有人为进行标签，因此被称为self-supervised。</li>
-</ol>
-<h2 id="details">Details</h2>
+<p>If we incorporate ground truth labels with the predictions, where we maximize true predicted posterior while minimizing false predicted posterior, we get exactly the close form to the cross entropy loss: <span class="math display">\[
+\underset{\Theta }{\arg \max} \quad \tilde{y}log[p(\tilde{y})]+(1-y)log[1-p(\tilde{y})]
+\]</span></p>
 
     </div>
 
@@ -259,9 +279,10 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/Video-Representation/" rel="tag"># Video Representation</a>
-              <a href="/tags/Memory-Bank/" rel="tag"># Memory Bank</a>
-              <a href="/tags/Self-supervised/" rel="tag"># Self-supervised</a>
+              <a href="/tags/Meta-learning/" rel="tag"># Meta-learning</a>
+              <a href="/tags/Continual-learning/" rel="tag"># Continual-learning</a>
+              <a href="/tags/GNN/" rel="tag"># GNN</a>
+              <a href="/tags/Variational-inference/" rel="tag"># Variational inference</a>
           </div>
 
         
@@ -269,11 +290,11 @@
 
         
     <div class="post-nav">
-      <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2021/06/16/CML-BGNN-loss-proof/" rel="next" title="对CML-BGNN中损失函数的纠正与证明">
-      对CML-BGNN中损失函数的纠正与证明 <i class="fa fa-chevron-right"></i>
+    <a href="/2021/06/16/MemDPC/" rel="prev" title="MemDPC-用MemoryBank记忆视频特征">
+      <i class="fa fa-chevron-left"></i> MemDPC-用MemoryBank记忆视频特征
     </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -332,7 +353,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#motivation"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#related-work"><span class="nav-number">2.</span> <span class="nav-text">Related work</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#method"><span class="nav-number">3.</span> <span class="nav-text">Method</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#computational-flow"><span class="nav-number">3.1.</span> <span class="nav-text">Computational flow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#details"><span class="nav-number">3.2.</span> <span class="nav-text">Details</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#claim-undersetthetaargmin-mathcall_e-undersetthetaargmin-mathcall_b"><span class="nav-number">1.</span> <span class="nav-text">Claim: \(\underset{\Theta}{\arg\min} \ \mathcal{L}_E &#x3D; \underset{\Theta}{\arg\min} \ \mathcal{L}_B\)</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
