@@ -22,26 +22,26 @@
 
   <meta property="og:type" content="website">
 <meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:url" content="http://example.com/categories/%E6%96%87%E7%8C%AE%E9%98%85%E8%AF%BB/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:locale" content="en_US">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/">
+<link rel="canonical" href="http://example.com/categories/%E6%96%87%E7%8C%AE%E9%98%85%E8%AF%BB/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
+    isHome : false,
     isPost : false,
     lang   : 'en'
   };
 </script>
 
-  <title>Hexo</title>
+  <title>Category: 文献阅读 | Hexo</title>
   
 
 
@@ -154,99 +154,50 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content category">
             
-      
+
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/06/16/MemDPC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/06/16/MemDPC/" class="post-title-link" itemprop="url">MemDPC-用MemoryBank记忆视频特征</a>
+  
+  <div class="post-block">
+    <div class="posts-collapse">
+      <div class="collection-title">
+        <h2 class="collection-header">文献阅读
+          <small>Category</small>
         </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-              
-
-              <time title="Created: 2021-06-16 16:46:08 / Modified: 20:32:33" itemprop="dateCreated datePublished" datetime="2021-06-16T16:46:08+08:00">2021-06-16</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%96%87%E7%8C%AE%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">文献阅读</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
+      </div>
 
       
-          <p>该文着手解决的任务是基于自监督的视频表征学习，核心思想还是通过加Memory Bank的方式记忆视频特征，跟17年Anomaly detection领域提出的MemAE很像，都是用prototypical vectors组合的方式生成新的特征。</p>
-<h1 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h1><ol>
-<li>尽管已经有不少在多模态任务上的视频表示学习的work，但在视频这单一模态上的自监督表示学习鲜有人问津。</li>
-<li>视频由于其包含时序信息的数据特性，因此天然便可以做成一个自监督的任务。例如，可以做成future frames prediction的范式——将视频划分成前后两段，通过学习前段、预测后端的方式进行training。而事实上很多video representation learning的模型确实也是这样做的——通过预测的方式引入监督信息进行training.</li>
-<li>future frame prediction涉及到视频行为预测的问题，但视频预测涉及到两个难点：一个是视频画面中很多不规律物体的运动实际上是很难甚至是无法预测的，例如树叶的抖动，但事实上我们也并不关心这部分的运动；另一个是如何从未来的无数种可能中选出最合理的那个，这需要模型具有物体运动规律的先验知识，例如通过学习Golfer的挥击过程，从而通过前一段视频来预测其后续动作。因此，一个好的Video predicting model，既要能够“无视”无关且难以预测的行为（亦或者说focus on我们关心的行为），又要能够学习目标行为的运动规律，从众多可能的future hypothesis中选取出最合理的一个。</li>
-</ol>
-<h1 id="Related-work"><a href="#Related-work" class="headerlink" title="Related work"></a>Related work</h1><p>已有的视频表征学习方法有两类：</p>
-<ol>
-<li>一种是预测多个possible future representation 然后选择与ground truth最接近的进行optimization；</li>
-<li>另外一类则是通过contrastive learning进行的——这类模型只预测单个hypothesis，然后找一堆无关视频片段作为negative sample，然后优化model使得prediction相较于这些negatives，能够和ground truth更加相似。</li>
-</ol>
-<h1 id="Method"><a href="#Method" class="headerlink" title="Method"></a>Method</h1><p>主体思想是RNN+Memory Bank。</p>
-<h2 id="Computational-flow"><a href="#Computational-flow" class="headerlink" title="Computational flow"></a>Computational flow</h2><p>TIPS：计算流是理解一个算法的有效方式。</p>
-<p>先上架构图：</p>
-<img src="https://z3.ax1x.com/2021/06/16/2XaY9S.png">
-
-
-
-<ol>
-<li>视频被切分成了很多个block，每个block大概8帧大小，然后用feature backbone $f$ 对$t$时刻的block抽取特征，记为$z_i$，也相应的生成了一个temporal sequence：$\textbf{z}={z_i}_{i=1}^T$。整个序列被划分成两部分，前$t$个时刻作为input，为后面的prediction收集信息，后$T-t$个时刻用于对prediction进行监督。</li>
-<li>$\textbf{z}$被送到RNN中，得到每一步的输出 $c_t$ 。$c_t$ 相当于综合了其前面$t$个时刻的信息，所以被称为 (temporal) aggregated feature。</li>
-<li>（本文的重点）$c_t$被送入到一个Memory Module中做 Memory augmented的推理：$M$是一个记忆单元阵，可以看做是一组Prototypical vectors（原型向量）。$c_t$通过$\phi$（可以是任何映射工具，例如一个CNN）生成一个weight vector或probability vector $p_{t+1}$，接着以$p_{t+1}$作为权重对$M$中的向量进行线性组合，得到下一时刻embedding $z_{t+1}$。NOTE：原文提到这里的组合是Convex Combination（凸组合），也就是说$p_{t+1}$一定是一个非负元素向量。</li>
-<li>生成的$z_{t+1}$一方面被送到RNN中进一步的aggregate信息，另一方面与ground truth进行对比，达到supervised learning的效果。因为整个training都是在一个视频中进行的，并且没有人为进行标签，因此被称为self-supervised。</li>
-</ol>
-<h2 id="Details"><a href="#Details" class="headerlink" title="Details"></a>Details</h2>
-      
+    <div class="collection-year">
+      <span class="collection-header">2021</span>
     </div>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+  <article itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
 
+      <div class="post-meta">
+        <time itemprop="dateCreated"
+              datetime="2021-06-16T16:46:08+08:00"
+              content="2021-06-16">
+          06-16
+        </time>
+      </div>
+
+      <div class="post-title">
+          <a class="post-title-link" href="/2021/06/16/MemDPC/" itemprop="url">
+            <span itemprop="name">MemDPC-用MemoryBank记忆视频特征</span>
+          </a>
+      </div>
+
+    </header>
+  </article>
+
+    </div>
+  </div>
+  
+  
+  
 
   
 
@@ -429,61 +380,6 @@
   
 
   
-      
-
-<script>
-  if (typeof MathJax === 'undefined') {
-    window.MathJax = {
-      loader: {
-          load: ['[tex]/mhchem'],
-        source: {
-          '[tex]/amsCd': '[tex]/amscd',
-          '[tex]/AMScd': '[tex]/amscd'
-        }
-      },
-      tex: {
-        inlineMath: {'[+]': [['$', '$']]},
-          packages: {'[+]': ['mhchem']},
-        tags: 'ams'
-      },
-      options: {
-        renderActions: {
-          findScript: [10, doc => {
-            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
-              const display = !!node.type.match(/; *mode=display/);
-              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
-              const text = document.createTextNode('');
-              node.parentNode.replaceChild(text, node);
-              math.start = {node: text, delim: '', n: 0};
-              math.end = {node: text, delim: '', n: 0};
-              doc.math.push(math);
-            });
-          }, '', false],
-          insertedScript: [200, () => {
-            document.querySelectorAll('mjx-container').forEach(node => {
-              let target = node.parentNode;
-              if (target.nodeName.toLowerCase() === 'li') {
-                target.parentNode.classList.add('has-jax');
-              }
-            });
-          }, '', false]
-        }
-      }
-    };
-    (function () {
-      var script = document.createElement('script');
-      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-      script.defer = true;
-      document.head.appendChild(script);
-    })();
-  } else {
-    MathJax.startup.document.state(0);
-    MathJax.texReset();
-    MathJax.typeset();
-  }
-</script>
-
-    
 
   
 
